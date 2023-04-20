@@ -1,0 +1,70 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Section;
+use App\Models\StudentRecord;
+use App\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use App\Models\MyClass;
+
+
+class StudentRecordsTableSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        $this->createStudentRecord();
+        $this->createManyStudentRecords(3);
+    }
+
+    protected function createManyStudentRecords(int $count)
+    {
+        // $sections = Section::all();
+        $c = MyClass::pluck('id')->all();
+        foreach ($c as $section){
+          User::factory()
+                ->has(
+                    StudentRecord::factory()
+                    ->state([
+                    // 'section_id' => $section->id,
+                    'my_class_id' => $section,
+                    'user_id' => function(User $user){
+                        return ['user_id' => $user->id];
+                    },
+                ]), 'student_record')
+                ->count($count)
+                ->create([
+                    'user_type' => 'student',
+                    'password' => Hash::make('student'),
+                ]);
+        }
+
+    }
+
+    protected function createStudentRecord()
+    {
+        // $section = Section::first();
+        $c = MyClass::first();
+
+        $user = User::factory()->create([
+            'name' => 'Học sinh DJ',
+            'user_type' => 'student',
+            'username' => 'student',
+            'password' => Hash::make('cj'),
+            'email' => 'student@student.com',
+
+        ]);
+
+        StudentRecord::factory()->create([
+            'my_class_id' => $c,
+            'user_id' => $user->id,
+            // 'section_id' => $section->id
+        ]);
+    }
+}
